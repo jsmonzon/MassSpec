@@ -1,6 +1,0 @@
-data/
-data/*.h5
-data/*.npz
-*.log
-src/__pycache__/
-.DS_Store
