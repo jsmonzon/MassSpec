@@ -9,11 +9,12 @@ config = {
     "N_cpus": 16,
     "merger_crit": -2,
     "fesc": 0.2,
-    "scatter": True}
+    "scatter": True,
+    "mass_cut": 6.75e9}
 
 range = np.arange(11, 14.2, 0.2) # the discrete mass bins
 mass_bins = np.char.mod('%.1f', range) # conver to strings
-datadir = "../../netb/vdbosch/jsm99/data/mass_spec/DF_up/" # all the files are saved here!
+datadir = "/../../netb/vdbosch/jsm99/data/mass_spec/DF_up/" # all the files are saved here!
 
 h5_blocks = [] # a list of all the text files
 
