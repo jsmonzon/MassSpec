@@ -20,7 +20,7 @@ sys.path.insert(0, parentdir)
 import jsm_visualize
 
 hf_prefix = config["datafiles"].split(".txt")[0]
-save_name = "/home/jsm99/data/mass_spec/DF_down/"+hf_prefix
+save_name = "/home/jsm99/data/mass_spec/DF_up/"+hf_prefix
 
 Ntrees = len(files)
 print("Reading in", Ntrees, "trees")
