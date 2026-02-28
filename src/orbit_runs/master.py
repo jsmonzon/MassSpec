@@ -7,13 +7,14 @@ config = {
     "N_cpus": 12,
     "merger_crit": -1,
     "fesc": 0.2,
-    "scatter": True}
+    "scatter": True,
+    "mass_cut": 6.75e9}
 
 # Write the configuration to a JSON file
 with open("config.json", "w") as f:
     json.dump(config, f)
 
-scripts = ["identitical.py", "jiang.py", "zentner.py"]
+scripts = ["identitcal.py", "jiang.py", "zentner.py"]
 
 for script in scripts:
 

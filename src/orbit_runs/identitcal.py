@@ -12,8 +12,8 @@ with open("config.json", "r") as f:
 location = config["location"]
 if location == "server":
     parentdir = "/home/jsm99/SatGen/mcmc/src/"
-    datadir = "/netb/vdbosch/jsm99/data/mass_spec/orbit_runs/identitical/"
-    save_name = "/home/jsm99/data/mass_spec/orbit_runs/identitical"
+    datadir = "/netb/vdbosch/jsm99/data/mass_spec/orbit_runs/identitcal"
+    save_name = "/home/jsm99/data/mass_spec/orbit_runs/identitcal"
 
 sys.path.insert(0, parentdir)
 import jsm_visualize 
