@@ -30,9 +30,9 @@ print("saving to", save_name)
 def process_file(file_i):
     try:
         tree_i = jsm_visualize.Arborist(file=file_i, merger_crit=config["merger_crit"], fesc=config["fesc"], scatter=config["scatter"], verbose=False)
-        tree_i.plant_roots()
-        tree_i.water_roots()
-        tree_i.dendrochronology(mass_threshold=config["mass_cut"])
+        # tree_i.plant_roots()
+        # tree_i.water_roots()
+        # tree_i.dendrochronology(mass_threshold=config["mass_cut"])
         tree_i.canopy(mass_threshold=config["mass_cut"])
         return tree_i.write_out_abundance()
     
