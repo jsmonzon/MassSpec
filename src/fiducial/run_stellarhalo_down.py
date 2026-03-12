@@ -33,7 +33,7 @@ def process_file(file_i):
         # tree_i.plant_roots()
         # tree_i.water_roots()
         # tree_i.dendrochronology(mass_threshold=config["mass_cut"])
-        tree_i.canopy(mass_threshold=config["mass_cut"])
+        tree_i.canopy_ave(mass_threshold=config["mass_cut"])
         return tree_i.write_out_abundance()
     
     except Exception as e:
