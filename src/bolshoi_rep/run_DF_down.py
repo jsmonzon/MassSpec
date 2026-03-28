@@ -16,7 +16,7 @@ if location == "server":
     save_name = "/home/jsm99/data/mass_spec/bolshoi_rep/DF_down"
     
 sys.path.insert(0, parentdir)
-import jsm_stellarhalo 
+import jsm_visualize 
 
 files = [os.path.join(datadir, filename) for filename in os.listdir(datadir)
             if filename.startswith('tree') and filename.endswith('evo.npz')]
