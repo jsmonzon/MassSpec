@@ -8,31 +8,24 @@ import json
 with open("config.json", "r") as f:
     config = json.load(f)
 
-with open(config["datafiles"], "r") as f:
-    files = f.read().splitlines()
-
 # Define paths based on location
 location = config["location"]
 if location == "server":
     parentdir = "/home/jsm99/SatGen/mcmc/src/"
-
+    datadir = "/netb/vdbosch/jsm99/data/bolshoi_rep/alpha_down/"
+    save_name = "/home/jsm99/data/mass_spec/bolshoi_rep/alpha_down"
+    
 sys.path.insert(0, parentdir)
-import jsm_visualize
+import jsm_stellarhalo 
 
-hf_prefix = config["datafiles"].split(".txt")[0]
-save_name = "/home/jsm99/data/mass_spec/fid/"+hf_prefix
+files = [os.path.join(datadir, filename) for filename in os.listdir(datadir)
+            if filename.startswith('tree') and filename.endswith('evo.npz')]
 
 Ntrees = len(files)
-print("Reading in", Ntrees, "trees")
-print("---------")
-print("saving to", save_name)
 
 def process_file(file_i):
     try:
         tree_i = jsm_visualize.Arborist(file=file_i, merger_crit=config["merger_crit"], fesc=config["fesc"], scatter=config["scatter"], verbose=False)
-        # tree_i.plant_roots()
-        # tree_i.water_roots()
-        # tree_i.dendrochronology(mass_threshold=config["mass_cut"])
         tree_i.ave_canopy(mass_threshold=config["mass_cut"])
         return tree_i.write_out_abundance()
     
