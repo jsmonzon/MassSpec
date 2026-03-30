@@ -14,7 +14,7 @@ config = {
 with open("config.json", "w") as f:
     json.dump(config, f)
 
-scripts = ["run_fid.py", "run_alpha_down.py", "run_alpha_up.py", "run_DF_up.py"]
+scripts = ["run_fid.py", "run_alpha_down.py", "run_alpha_up.py", "run_DF_up.py", "run_DF_down.py"]
 
 for script in scripts:
 
