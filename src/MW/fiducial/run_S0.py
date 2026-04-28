@@ -13,7 +13,7 @@ location = config["location"]
 if location == "server":
     parentdir = "/home/jsm99/SatGen/mcmc/src/"
     datadir = "/netb/vdbosch/jsm99/data/Mres_3_10k/"
-    save_name = "/home/jsm99/data/mass_spec/abundance/S0_fid"
+    save_name = "/home/jsm99/data/mass_spec/MW/S0_fid"
     
 sys.path.insert(0, parentdir)
 import jsm_visualize 
