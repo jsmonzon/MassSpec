@@ -4,9 +4,9 @@ import numpy as np
 import os
 
 mass_cut_configs = [
-    {"mass_cut": 7.5e9,  "alias": "N50"},
-    {"mass_cut": 7.5e10, "alias": "N500"},
-    {"mass_cut": 1.5e11, "alias": "N1000"},
+    {"mass_cut": 7.75e9,  "alias": "N50"},
+    {"mass_cut": 7.75e10, "alias": "N500"},
+    {"mass_cut": 1.55e11, "alias": "N1000"},
 ]
 
 config = {
@@ -17,8 +17,8 @@ config = {
     "scatter": True,
     "mass_cut": None}  # will be set in loop
 
-range = np.arange(11, 14.2, 0.2)
-mass_bins = np.char.mod('%.1f', range)
+mass_range = np.arange(12.2, 14.2, 0.2)
+mass_bins = np.char.mod('%.1f', mass_range)
 datadir = "/../../netb/vdbosch/jsm99/data/mass_spec/DF_fid/"
 
 # ---create h5 blocks once
