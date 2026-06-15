@@ -48,4 +48,4 @@ for mc in mass_cut_configs:
         print(f"alias = {mc['alias']} | mass_cut = {mc['mass_cut']:.2e} | h5 block = {h5}")
         print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
-        subprocess.run(["python", "run_stellarhalo_fid.py"])
+        subprocess.run(["python", "run_abundance_fid.py"])
