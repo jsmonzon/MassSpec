@@ -10,7 +10,7 @@ config = {
     "merger_crit": -2,
     "fesc": 0.2,
     "scatter": True,
-    "mass_cut": 6.75e9}
+    "mass_cut": 7.75e10}
 
 range = np.arange(11, 14.2, 0.2) # the discrete mass bins
 mass_bins = np.char.mod('%.1f', range) # conver to strings
