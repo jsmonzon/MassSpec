@@ -17,7 +17,7 @@ if location == "server":
     parentdir = "/home/jsm99/SatGen/mcmc/src/"
 
 sys.path.insert(0, parentdir)
-import jsm_visualize
+import jsm_stellarhalo
 
 hf_prefix = config["datafiles"].split(".txt")[0]
 save_name = "/home/jsm99/data/mass_spec_vdb/DF_fid/"+hf_prefix
@@ -29,9 +29,7 @@ print("saving to", save_name)
 
 def process_file(file_i):
     try:
-        tree_i = jsm_visualize.Arborist(file=file_i, merger_crit=config["merger_crit"], fesc=config["fesc"], scatter=config["scatter"], verbose=False)
-        tree_i.dendrochronology(mass_threshold=config["mass_cut"])
-        tree_i.canopy()
+        tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=config["mass_cut"], verbose=False)
         return tree_i.write_out_abundance()
     
     except Exception as e:

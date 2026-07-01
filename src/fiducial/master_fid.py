@@ -7,13 +7,10 @@ import os
 config = {
     "location": "server",
     "N_cpus": 16,
-    "merger_crit": -2,
-    "fesc": 0.2,
-    "scatter": True,
     "mass_cut": 7.75e10}
 
-range = np.arange(12.4, 14.2, 0.2) # the discrete mass bins
-mass_bins = np.char.mod('%.1f', range) # conver to strings
+mass_bin_edges = np.arange(12.4, 14.2, 0.2) # the discrete mass bins
+mass_bins = np.char.mod('%.1f', mass_bin_edges) # conver to strings
 datadir = "/../../netb/vdbosch/jsm99/data/mass_spec_vdb/DF_fid/" # all the files are saved here!
 
 h5_blocks = [] # a list of all the text files
@@ -21,6 +18,9 @@ h5_blocks = [] # a list of all the text files
 for bin in mass_bins:
     file_list = bin+"_files.txt" # add the mass bin to the list
     h5_blocks.append(file_list)
+
+    if os.path.exists(file_list):
+        os.remove(file_list)  # clear any stale list from a previous run before appending fresh entries
 
     with open(file_list, "a") as f:
         for filename in os.listdir(datadir):
