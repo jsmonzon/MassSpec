@@ -15,44 +15,50 @@ with open(config["datafiles"], "r") as f:
 location = config["location"]
 if location == "server":
     parentdir = "/home/jsm99/SatGen/mcmc/src/"
-
 sys.path.insert(0, parentdir)
 import jsm_stellarhalo
 
+DF_tag = config["DF_tag"]
+
+# strip the DF_tag prefix back off so the save filename matches the mass-bin file list
 hf_prefix = config["datafiles"].split(".txt")[0]
-save_name = "/home/jsm99/data/mass_spec_vdb/DF_fid/"+hf_prefix
+if hf_prefix.startswith(f"{DF_tag}_"):
+    hf_prefix = hf_prefix[len(DF_tag) + 1:]
+
+save_dir = f"/home/jsm99/data/mass_spec_zhao/DF_test/{DF_tag}/"
+os.makedirs(save_dir, exist_ok=True)
+save_name = save_dir + hf_prefix
 
 Ntrees = len(files)
 print("Reading in", Ntrees, "trees")
 print("---------")
 print("saving to", save_name)
 
+
 def process_file(file_i):
     try:
         tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=config["mass_cut"], verbose=False)
         return tree_i.write_out_abundance()
-    
+
     except Exception as e:
         print(f"Error processing {file_i}: {e}")
         return None
-    
+
+
 if __name__ == "__main__":
-
     with mp.Pool(processes=config["N_cpus"]) as pool:
-        results = pool.map(process_file, files) 
-
+        results = pool.map(process_file, files)
     # Filter out None results safely
     valid_entries = [entry for entry in results if isinstance(entry, dict) and "tree_index" in entry]
-
     dict_dict = {
         entry["tree_index"]: {k: v for k, v in entry.items() if k != "tree_index"}
         for entry in valid_entries
     }
-    
-    with h5py.File(f"{save_name}.h5", "w") as f: # saving the dictionary for the surviving population!
+
+    with h5py.File(f"{save_name}.h5", "w") as f:  # saving the dictionary for the surviving population!
         for sim_name, attributes in dict_dict.items():
             sim_group = f.create_group(sim_name)  # Create a group for each simulation
-            
+
             for attr_name, data in attributes.items():
                 if np.isscalar(data) or (isinstance(data, np.ndarray) and data.shape == ()):
                     sim_group.create_dataset(attr_name, data=data)  # no compression
