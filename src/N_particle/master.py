@@ -12,14 +12,11 @@ mass_cut_configs = [
 config = {
     "location": "server",
     "N_cpus": 16,
-    "merger_crit": -2,
-    "fesc": 0.2,
-    "scatter": True,
     "mass_cut": None}  # will be set in loop
 
-mass_range = np.arange(12.2, 14.2, 0.2)
+mass_range = np.arange(12.6, 14.2, 0.2)
 mass_bins = np.char.mod('%.1f', mass_range)
-datadir = "/../../netb/vdbosch/jsm99/data/mass_spec/DF_fid/"
+datadir = "/../../netb/vdbosch/jsm99/data/mass_spec_vdb/DF_fid/"
 
 # ---create h5 blocks once
 h5_blocks = []

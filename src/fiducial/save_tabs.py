@@ -8,3 +8,6 @@ for tag in DF_tags:
 
     temp = jsm_ancillary.load_massspec_z0("../../data/zhao/DF_test/"+tag+"/", "artificial")
     temp.to_csv("../../data/zhao/DF_test/"+tag+"/artificial_all.csv")
+
+    # shmf_temp = jsm_ancillary.load_shmf_z0("../../data/zhao/DF_test/"+tag+"/")
+    # shmf_temp.to_csv("../../data/zhao/DF_test/"+tag+"/SHMFs.csv")
