@@ -1,27 +1,25 @@
 import subprocess
 import json
-import numpy as np
 
 # Define your global variables here
 config = {
     "location": "server",
     "N_cpus": 16,
     "seed": 42,
-    "fixed_c": 10,
-    "mass_cut": 1e9}
+    "Nparticles": 1e7}
 
 # Write the configuration to a JSON file
 with open("config.json", "w") as f:
     json.dump(config, f)
 
-Nparticles = [1e4, 1e5, 1e6, 1e7]
+mass_cut = [1.00000000e+09, 3.16227766e+09, 1.00000000e+10, 3.16227766e+10, 1.00000000e+11]
 
-for Npart in Nparticles:
+for cut in mass_cut:
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-    print(f"Running with log Nparticles = {np.log10(Npart)}")
+    print(f"Running with log mass_cut = {cut}")
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
-    config["Nparticles"] = Npart
+    config["mass_cut"] = cut
 
     with open("config.json", "w") as f:
         json.dump(config, f)

@@ -15,12 +15,12 @@ if location == "server":
     parentdir = "/home/jsm99/SatGen/mcmc/src/"
     datadir = "/netb/vdbosch/jsm99/data/Mres_3_10k/"
 
-    logNpart = int(np.log10(config["Nparticles"]))
+    mcut = np.log10(config["mass_cut"])
 
     save_name = (
-        f"/home/jsm99/data/mass_spec/MW/"
-        f"concentration_test_Npart{logNpart}"
-    )
+        f"/home/jsm99/data/mass_spec_zhao/MW/ctest/"
+        f"cvir_test_mcut{mcut:.3f}"
+)
     
 sys.path.insert(0, parentdir)
 import jsm_stellarhalo 
