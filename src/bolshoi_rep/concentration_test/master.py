@@ -13,14 +13,14 @@ config = {
 with open("config.json", "w") as f:
     json.dump(config, f)
 
-Nparticles = [1e5, 1e6, 1e7]
+cmodels = ["zhao", "ludlow"]
 
-for Npart in Nparticles:
+for c in cmodels:
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-    print(f"Running with log Nparticles = {np.log10(Npart)}")
+    print(f"Running on the "+c+" model")
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
-    config["Nparticles"] = Npart
+    config["cmodel"] = c
 
     with open("config.json", "w") as f:
         json.dump(config, f)

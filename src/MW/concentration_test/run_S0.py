@@ -33,8 +33,8 @@ Ntrees = len(files)
 
 def process_file(file_i):
     try:
-        tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=config["mass_cut"], verbose=True)
-        tree_i.compute_concentration(Nparticles=int(config["Nparticles"]), rng=np.random.default_rng(int(config["seed"])), c_true=config["fixed_c"])
+        tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=config["mass_cut"], verbose=False)
+        tree_i.compute_concentration(Nparticles=int(config["Nparticles"]), rng=np.random.default_rng(int(config["seed"])))
         return tree_i.write_out_concentrations()
     
     except Exception as e:

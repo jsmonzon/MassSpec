@@ -14,10 +14,7 @@ location = config["location"]
 if location == "server":
     parentdir = "/home/jsm99/SatGen/mcmc/src/"
     datadir = "/netb/vdbosch/jsm99/data/bolshoi_rep/fid/"
-
-    logNpart = int(np.log10(config["Nparticles"]))
-
-    save_name = ("/home/jsm99/data/mass_spec_zhao/bolshoi_rep/cvir_test/"+f"Npart{logNpart}")
+    save_name = ("/home/jsm99/data/mass_spec_zhao/bolshoi_rep/cvir_test/start_"+config["cmodel"])
     
 sys.path.insert(0, parentdir)
 import jsm_stellarhalo 
@@ -31,7 +28,7 @@ Ntrees = len(files)
 def process_file(file_i):
     try:
         tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=config["mass_cut"], verbose=False)
-        tree_i.compute_concentration(Nparticles=int(config["Nparticles"]), rng=np.random.default_rng(int(config["seed"])))
+        tree_i.compute_concentration(rng=np.random.default_rng(int(config["seed"])), c_true=config["cmodel"])
         return tree_i.write_out_abundance()
     
     except Exception as e:
