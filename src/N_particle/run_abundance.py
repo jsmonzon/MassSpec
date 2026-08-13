@@ -20,7 +20,7 @@ sys.path.insert(0, parentdir)
 import jsm_stellarhalo
 
 hf_prefix = config["datafiles"].split(".txt")[0]
-save_name = "/home/jsm99/data/mass_spec_vdb/" + config["alias"] + "/" + hf_prefix
+save_name = "/home/jsm99/data/mass_spec_zhao/" + config["alias"] + "/" + hf_prefix
 os.makedirs(os.path.dirname(save_name), exist_ok=True)
 
 Ntrees = len(files)
@@ -31,6 +31,7 @@ print("saving to", save_name)
 def process_file(file_i):
     try:
         tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=config["mass_cut"], verbose=False)
+        tree_i.compute_concentration(rng=np.random.default_rng(42), c_true=config["zhao"])
         return tree_i.write_out_abundance()
 
     except Exception as e:
