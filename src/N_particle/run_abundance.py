@@ -31,7 +31,7 @@ print("saving to", save_name)
 def process_file(file_i):
     try:
         tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=config["mass_cut"], verbose=False)
-        tree_i.compute_concentration(rng=np.random.default_rng(42), c_true=config["zhao"])
+        tree_i.compute_concentration(rng=np.random.default_rng(42), c_true="zhao")
         return tree_i.write_out_abundance()
 
     except Exception as e:

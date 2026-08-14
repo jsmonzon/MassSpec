@@ -19,16 +19,19 @@ mass_bins = np.char.mod('%.1f', mass_range)
 datadir = "/../../netb/vdbosch/jsm99/data/mass_spec_zhao/DF_1/"
 
 # ---create h5 blocks once
-h5_blocks = []
+h5_blocks = []  
+
 for bin in mass_bins:
     file_list = bin+"_files.txt"
     h5_blocks.append(file_list)
-
+    if os.path.exists(file_list):
+        os.remove(file_list)  # clear any stale list from a previous run before appending fresh entries
     with open(file_list, "a") as f:
         for filename in os.listdir(datadir):
-            if bin in filename and filename.endswith('evo.npz'):
-                writeout = datadir+filename
+            if bin in filename and filename.endswith('evo.npz'):  # save all of the files to this block
+                writeout = datadir + filename
                 f.write(writeout + "\n")
+
 
 # ---now loop over mass cuts, reusing the same h5 blocks
 for mc in mass_cut_configs:
@@ -45,4 +48,4 @@ for mc in mass_cut_configs:
         print(f"alias = {mc['alias']} | mass_cut = {mc['mass_cut']:.2e} | h5 block = {h5}")
         print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
-        subprocess.run(["python", "run_abundance_fid.py"])
+        subprocess.run(["python", "run_abundance.py"])
