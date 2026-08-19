@@ -3,11 +3,13 @@ import json
 import numpy as np
 import os
 
-mass_cut_configs = [
-    {"mass_cut": 7.75e9,  "alias": "N50"},
-    {"mass_cut": 7.75e10, "alias": "N500"},
-    {"mass_cut": 1.55e11, "alias": "N1000"},
-]
+# mass_cut_configs = [
+#     {"mass_cut": 7.75e9,  "alias": "N50"},
+#     {"mass_cut": 7.75e10, "alias": "N500"},
+#     {"mass_cut": 1.55e11, "alias": "N1000"},
+# ]
+
+mass_cut_configs = [{"mass_cut": 7.75e10, "alias": "N500"}]
 
 config = {
     "location": "server",
