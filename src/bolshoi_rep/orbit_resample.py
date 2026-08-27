@@ -23,7 +23,7 @@ files = [os.path.join(master_path, filename) for filename in os.listdir(master_p
 
 def process_tree(file):
     base_dir, filename = os.path.split(file) 
-    orbit.resample_orbit(file, save_path + filename)
+    orbit.b(file, save_path + filename)
 
 if __name__ == "__main__":
     with concurrent.futures.ProcessPoolExecutor(max_workers=16) as executor:
