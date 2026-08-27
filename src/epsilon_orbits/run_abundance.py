@@ -45,7 +45,7 @@ import multiprocessing as mp
 import numpy as np
 import h5py
 
-DEFAULT_FIDUCIAL_DIR = "/netb/vdbosch/jsm99/data/mass_spec_zhao/"
+DEFAULT_FIDUCIAL_DIR = "/netb/vdbosch/jsm99/data/mass_spec_zhao/DF_1/"
 DEFAULT_EPSILON_DIR = "/netb/vdbosch/jsm99/data/mass_spec_zhao/epsilon_orbits/"
 DEFAULT_SAVE_DIR = "/home/jsm99/data/epsilon/"
 DEFAULT_PARENTDIR = "/home/jsm99/SatGen/mcmc/src/"
