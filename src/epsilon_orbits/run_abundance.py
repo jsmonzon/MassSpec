@@ -15,10 +15,17 @@ directory apart:
   - epsilon-scaled orbits: /netb/vdbosch/jsm99/data/mass_spec_zhao/epsilon_orbits/
       -> all evolved trees in that directory (already just the 13.0 bin)
 
-Each directory is run through jsm_stellarhalo.Tree_Reader.write_out_abundance()
-and aggregated into its own .h5 file (one group per tree_index, matching the
-structure of the existing N1000 h5 files). By default both are run, saving
-two separate h5 files into /home/jsm99/data/epsilon/:
+Each tree is run through jsm_stellarhalo.Tree_Reader: first
+compute_concentration(rng=..., c_true="zhao") -- this populates
+self.without_sub / self.with_sub / self.N_subhalos_FORCE / etc, which
+write_out_abundance() reads unconditionally, so it must be called first
+(matching N_particle/run_abundance.py's convention; skipping it, as
+fiducial/run_abundance.py does, raises
+"'Tree_Reader' object has no attribute 'without_sub'") -- then
+write_out_abundance(). Results are aggregated into a .h5 file (one group
+per tree_index, matching the structure of the existing N1000 h5 files). By
+default both directories are run, saving two separate h5 files into
+/home/jsm99/data/epsilon/:
     fiducial.h5
     epsilon.h5
 
@@ -45,6 +52,8 @@ DEFAULT_PARENTDIR = "/home/jsm99/SatGen/mcmc/src/"
 DEFAULT_MASS_CUT = 7.75e10
 DEFAULT_TARGET_MASS = "13.0"  # only mass bin epsilon has been run for so far
 DEFAULT_NCORES = 16
+DEFAULT_C_TRUE = "zhao"     # matches N_particle/run_abundance.py's convention
+DEFAULT_RNG_SEED = 42       # matches N_particle/run_abundance.py's fixed-seed convention
 
 
 def find_evo_files(input_dir, target_mass=None):
@@ -64,11 +73,18 @@ def find_evo_files(input_dir, target_mass=None):
 
 
 def _process_one(job):
-    file_i, mass_cut, parentdir = job
+    file_i, mass_cut, parentdir, c_true, rng_seed = job
     sys.path.insert(0, parentdir)
     import jsm_stellarhalo
     try:
         tree_i = jsm_stellarhalo.Tree_Reader(file=file_i, mass_threshold=mass_cut, verbose=False)
+        # write_out_abundance() reads self.without_sub / self.with_sub / etc,
+        # which are only populated by compute_concentration() -- it must be
+        # called first (see N_particle/run_abundance.py's convention; the
+        # fiducial/run_abundance.py template predates this and omits it,
+        # which is why copying that one alone throws
+        # "'Tree_Reader' object has no attribute 'without_sub'").
+        tree_i.compute_concentration(rng=np.random.default_rng(rng_seed), c_true=c_true)
         return tree_i.write_out_abundance()
     except Exception as e:
         return {"tree_index": None, "error": f"{os.path.basename(file_i)}: {e}"}
@@ -76,6 +92,7 @@ def _process_one(job):
 
 def run_abundance(input_dir, save_path, label="", target_mass=None,
                    parentdir=DEFAULT_PARENTDIR, mass_cut=DEFAULT_MASS_CUT,
+                   c_true=DEFAULT_C_TRUE, rng_seed=DEFAULT_RNG_SEED,
                    ncores=DEFAULT_NCORES, progress_every=100):
 
     files = find_evo_files(input_dir, target_mass=target_mass)
@@ -87,7 +104,7 @@ def run_abundance(input_dir, save_path, label="", target_mass=None,
     print("---------")
 
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    jobs = [(file_i, mass_cut, parentdir) for file_i in files]
+    jobs = [(file_i, mass_cut, parentdir, c_true, rng_seed) for file_i in files]
 
     valid_entries = []
     n_error = 0
@@ -129,6 +146,7 @@ def run_abundance(input_dir, save_path, label="", target_mass=None,
 def run_comparison(which="both", fiducial_dir=DEFAULT_FIDUCIAL_DIR, epsilon_dir=DEFAULT_EPSILON_DIR,
                     save_dir=DEFAULT_SAVE_DIR, target_mass=DEFAULT_TARGET_MASS,
                     parentdir=DEFAULT_PARENTDIR, mass_cut=DEFAULT_MASS_CUT,
+                    c_true=DEFAULT_C_TRUE, rng_seed=DEFAULT_RNG_SEED,
                     ncores=DEFAULT_NCORES, progress_every=100):
 
     results = {}
@@ -137,13 +155,15 @@ def run_comparison(which="both", fiducial_dir=DEFAULT_FIDUCIAL_DIR, epsilon_dir=
         results["fiducial"] = run_abundance(
             input_dir=fiducial_dir, save_path=os.path.join(save_dir, "fiducial.h5"),
             label="fiducial", target_mass=target_mass, parentdir=parentdir,
-            mass_cut=mass_cut, ncores=ncores, progress_every=progress_every)
+            mass_cut=mass_cut, c_true=c_true, rng_seed=rng_seed,
+            ncores=ncores, progress_every=progress_every)
 
     if which in ("epsilon", "both"):
         results["epsilon"] = run_abundance(
             input_dir=epsilon_dir, save_path=os.path.join(save_dir, "epsilon.h5"),
             label="epsilon", target_mass=target_mass, parentdir=parentdir,
-            mass_cut=mass_cut, ncores=ncores, progress_every=progress_every)
+            mass_cut=mass_cut, c_true=c_true, rng_seed=rng_seed,
+            ncores=ncores, progress_every=progress_every)
 
     return results
 
@@ -160,6 +180,9 @@ def _parse_args():
                         "pass '' to disable filtering")
     p.add_argument("--parentdir", default=DEFAULT_PARENTDIR)
     p.add_argument("--mass-cut", type=float, default=DEFAULT_MASS_CUT)
+    p.add_argument("--c-true", default=DEFAULT_C_TRUE, choices=["zhao", "ludlow"],
+                   help="concentration model fed to compute_concentration() (default: %(default)s)")
+    p.add_argument("--rng-seed", type=int, default=DEFAULT_RNG_SEED)
     p.add_argument("--ncores", type=int, default=DEFAULT_NCORES)
     p.add_argument("--progress-every", type=int, default=100)
     return p.parse_args()
@@ -170,4 +193,5 @@ if __name__ == "__main__":
     run_comparison(which=args.which, fiducial_dir=args.fiducial_dir, epsilon_dir=args.epsilon_dir,
                    save_dir=args.save_dir, target_mass=(args.target_mass or None),
                    parentdir=args.parentdir, mass_cut=args.mass_cut,
+                   c_true=args.c_true, rng_seed=args.rng_seed,
                    ncores=args.ncores, progress_every=args.progress_every)
