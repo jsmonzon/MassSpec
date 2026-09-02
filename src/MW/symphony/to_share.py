@@ -30,20 +30,6 @@ bare per-subhalo census:
                                               branch fell into the host's
                                               main progenitor
     (z=0 subhalo concentration isn't included here -- SatGen never saves it)
-
-FULL (Tree_Reader, e.g. epsilon.h5, fid.h5) -- everything above, plus:
-    c_measured_*, ludlow_c, Nsub_used, fsub_used
-                                    measured / analytic concentration
-    Nsub_{regime}_{order}, Msub_{regime}_{order}, fsub_{regime}_{order}
-                                    subhalo count / mass / mass-fraction
-                                    time series, split by survival
-                                    "regime" (total/massive/surviving/
-                                    rvir/rvir_surv/artificial) and order
-                                    (k1/k2/k3/all)
-    shmf_{regime}_{order}, MMs_z0{regime}
-                                    z=0 subhalo mass function
-    Full definitions live in jsm_stellarhalo.py's Tree_Reader (write_out_
-    abundance, compute_regimes, compute_shmf, compute_concentration).
 """
 
 import sys
