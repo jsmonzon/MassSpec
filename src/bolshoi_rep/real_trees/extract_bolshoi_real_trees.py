@@ -54,13 +54,15 @@ CONFIRMED as of 2026-09-02 (via the user's own `verify` run):
     mmp? are all <= 14, but would need a positional-fallback fix if this is
     ever extended to read later columns straight from the tree files.
 
-STILL UNVERIFIED (matters for the `locations` phase, not yet run):
-  - Whether locations.dat has an explicit ID column or relies on the row's
-    position along with implicit contiguous IDs (the README hints at the
-    latter). `locations` phase self-checks this: it fetches the very first
-    resolved tree and confirms the returned bytes actually start with
-    "#tree <expected_id>" before trusting the rest of the batch. If that
-    check fails, STOP and paste me the printed diagnostics.
+CONFIRMED as of 2026-09-02, second batch (via the user's own `locations`
+run): locations.dat has an explicit 4-column header
+'#TreeRootID FileID Offset Filename' -- not the guessed 2/3-column layouts
+from the first version of this script (that guess was wrong; see
+load_locations()'s docstring for the real format and how it was sanity
+checked). The `locations` phase still self-checks the byte-offset math by
+fetching the very first resolved tree and confirming the returned bytes
+start with "#tree <expected_id>" -- if that fails, STOP and paste back the
+printed diagnostics.
 """
 
 import sys
@@ -280,33 +282,29 @@ def download_full(url, dest):
 
 
 def load_locations(path):
-    """Parse locations.dat. Handles both an explicit 3-column
-    (id, filename, offset) layout and an implicit 2-column
-    (filename, offset) layout where row position encodes a contiguous id.
-    Auto-detects based on the first data line."""
+    """Parse locations.dat. CONFIRMED format 2026-09-02 (from the user's
+    actual downloaded file): a header line '#TreeRootID FileID Offset
+    Filename', then one row per z=0 halo:
+      - TreeRootID: the real halo id (matches '#tree <ID>' in the tree file)
+      - FileID: a redundant numeric file index -- not used, Filename is
+        given directly (no need to reconstruct tree_X_Y_Z.dat from it)
+      - Offset: byte offset of that tree's '#tree' line within Filename.
+        Sanity-checked: many different files' offset-3640 rows are each
+        that file's first tree (right after a same-sized header block);
+        one file (tree_0_3_1.dat) also has a row at offset ~499,127,188,
+        consistent with a tree much deeper into that 16GB file -- this is
+        a real byte offset with the expected huge dynamic range, not a
+        small index of some other kind.
+      - Filename: e.g. tree_0_3_1.dat
+    (The earlier speculative 2/3-column auto-detection this replaced was
+    never right -- the real file is 4 columns with an explicit header.)"""
     with open(path) as f:
-        first = f.readline()
-        while first.startswith("#"):
-            first = f.readline()
-    n_fields = len(first.split())
-
-    if n_fields == 3:
-        print("locations.dat looks like 3 columns -- treating as "
-              "(id, filename, offset)")
-        df = pd.read_csv(path, sep=r"\s+", comment="#",
-                          names=["id", "filename", "offset"])
-    elif n_fields == 2:
-        print("locations.dat looks like 2 columns -- treating as "
-              "(filename, offset) with id = row index (0-based). "
-              "THIS IS UNVERIFIED -- confirmed below by test-fetching "
-              "one tree.")
-        df = pd.read_csv(path, sep=r"\s+", comment="#",
-                          names=["filename", "offset"])
-        df["id"] = df.index.astype(np.int64)
-    else:
-        raise ValueError(f"Unexpected locations.dat format: {n_fields} "
-                          f"fields on first data line: {first!r}")
-
+        header = f.readline()
+    if not header.startswith("#"):
+        raise ValueError(f"Expected a '#'-prefixed header line, got: {header!r}")
+    df = pd.read_csv(path, sep=r"\s+", comment="#",
+                      names=["id", "file_id", "offset", "filename"])
+    df["id"] = df["id"].astype(np.int64)
     df["offset"] = df["offset"].astype(np.int64)
     return df
 
@@ -352,14 +350,24 @@ def phase_locations():
     print(f"\nSelf-check: fetching id={row['id']} from {row['filename']} "
           f"bytes {int(row['offset'])}-{end}")
     r = range_get(url, int(row["offset"]), end)
-    first_line = r.text.splitlines()[0] if r.text else "(empty)"
+    first_line = r.text.splitlines()[0] if r.text else ""
     print("  first line of response:", repr(first_line))
-    expected = f"#tree {int(row['id'])}"
-    if first_line.strip() == expected:
-        print("  MATCH -- offsets resolve correctly.")
+    # CORRECTED 2026-09-02: Offset points directly at the root halo's own
+    # DATA row, not at a preceding '#tree <ID>' tag line (confirmed against
+    # a live fetch: the first line was a normal data row whose id column
+    # already equalled the expected id). So the real check is "does the
+    # id-column field of the first row match", not a '#tree' string match.
+    id_col = get_col(find_header_columns(range_get(url, 0, 19999).text) or {}, "id")
+    fields = first_line.split()
+    ok = id_col is not None and len(fields) > id_col and fields[id_col] == str(int(row["id"]))
+    if ok:
+        print("  MATCH -- offset resolves directly to the root halo's data "
+              "row (no '#tree' tag prefix at this offset -- that's expected, "
+              "see load_locations()/main_branch_mah()'s notes).")
     else:
-        print(f"  MISMATCH -- expected {expected!r}. Do not trust the "
-              f"rest of the batch yet; paste this output back.")
+        print(f"  MISMATCH -- expected id column (index {id_col}) to read "
+              f"{int(row['id'])}. Do not trust the rest of the batch yet; "
+              f"paste this output back.")
 
 
 # ---------------------------------------------------------------------------
@@ -404,12 +412,21 @@ def phase_extract():
 # Phase 5: parse each raw tree block -> host main-branch MAH
 # ---------------------------------------------------------------------------
 
-def main_branch_mah(tree_text, cols):
+def main_branch_mah(tree_text, root_id, cols):
     """Walk the main branch (most-massive-progenitor chain) of a single
-    '#tree <id>' block and return (scale, mvir) arrays, oldest to z=0."""
+    tree's raw byte range and return (scale, mvir) arrays, oldest to z=0.
+
+    CORRECTED 2026-09-02: earlier assumed the fetched block starts with a
+    '#tree <id>' tag line and read root_id off of it. It doesn't -- offsets
+    in locations.dat point straight at the root halo's own data row (see
+    load_locations()'s docstring), so root_id must be passed in from the
+    caller (who already knows it from the offset table) rather than parsed
+    out of the text. The very last line of a fetched block CAN be a stray
+    '#tree <next_id>' tag (the next tree's, sitting right at the boundary
+    this block's end_offset was computed to stop before) -- that's handled
+    by the existing "skip any line starting with #" check below, same as
+    it always was; nothing special needed for it."""
     lines = tree_text.splitlines()
-    assert lines[0].startswith("#tree")
-    root_id = int(lines[0].split()[1])
 
     id_i = get_col(cols, "id")
     desc_i = get_col(cols, "desc_id")
@@ -418,7 +435,7 @@ def main_branch_mah(tree_text, cols):
     mmp_i = get_col(cols, "mmp?")  # may be absent in some releases
 
     rows = []
-    for line in lines[1:]:
+    for line in lines:
         if not line.strip() or line.startswith("#"):
             continue
         parts = line.split()
@@ -482,7 +499,7 @@ def phase_mah():
         with open(tree_path) as f:
             text = f.read()
         try:
-            scale, mvir = main_branch_mah(text, cols)
+            scale, mvir = main_branch_mah(text, halo_id, cols)
         except Exception as e:
             print(f"  failed on halo {halo_id}: {e}")
             continue
