@@ -513,7 +513,7 @@ def phase_mah():
         result["tree_index_to_id"] = merged["id"].values
 
     np.savez(MAH_OUT_NPZ, **result)
-    n_halos = len(result) // 2
+    n_halos = sum(1 for k in result if k.startswith("scale_"))
     print(f"Saved {n_halos} unique host MAHs ({len(merged)} tree_index rows "
           f"total) to {MAH_OUT_NPZ}")
     print("Look up a given tree_index's MAH via the parallel "
